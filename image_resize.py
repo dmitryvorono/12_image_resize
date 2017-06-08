@@ -28,23 +28,21 @@ def resize_image(im, width, height):
     return im.resize(new_size)
 
 
-def add_suffix_to_filename(filepath, suffix):
+def add_suffix_to_filename(filepath, new_image):
         folder, filename = os.path.split(filepath)
         name, extension = filename.split('.')
+        suffix = '__{0}x{1}'.format(*new_image.size) 
         return ''.join([folder, name, suffix, '.', extension])
 
 
 def is_equal_proportional(old_image, new_image):
     old_size = old_image.size
     new_size = new_image.size
-    if old_size[0] / old_size[1] != new_size[0] / new_size[1]:
-        return False
-    else:
-        return True
+    return bool(old_size[0] / old_size[1] == new_size[0] / new_size[1])
 
 
-def main(image, output, width, height, scale):
-    im = Image.open(image)
+def main(input_filepath, output, width, height, scale):
+    im = Image.open(input_filepath)
     if width or height:
         new_image = resize_image(im, width, height)
     elif scale:
@@ -52,7 +50,7 @@ def main(image, output, width, height, scale):
     if not is_equal_proportional(im, new_image):
         print('Warning: proportinal new image is not equal to the original image')
     if not output:
-        output = add_suffix_to_filename(image, '__{0}x{1}'.format(*new_image.size))
+        output = add_suffix_to_filename(input_filepath, new_image)
     new_image.save(output)
     return 0
 
@@ -62,5 +60,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if(args.width or args.height) and args.scale:
         sys.exit('--wigth and --height|--scale are mutually exclusive')
-    status = main(**vars(args))
+    status = main(args.image, args.output, args.width, args.height, args.scale)
     sys.exit(status)
